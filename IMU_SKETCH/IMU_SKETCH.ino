@@ -117,8 +117,8 @@ void loop() {
   float thetaa = atan2(ax, az); //x-z tilt, roll
   float phia = atan2(ay, az); //y-z tilt, pitch
 
-  // Serial.print(thetaa);
-  // Serial.print(",");
+  Serial.print(thetaa);
+  Serial.print(",");
   Serial.print(phia);
   Serial.print(",");
 
@@ -137,12 +137,13 @@ void loop() {
 
   //implementing complimentary filter
   // angle_estimate = accelerometer_estimate[rad]*alpha + (1-alpha)*(previous_angle_estimate[rad] + sample_time[s]*gyroscope_angle_rate[rad/s])
-  float phi = 0.05 * phia + (1 - 0.05) * (phiHat + (70/1000)*phiDot_rps); 
-  float theta = 0.05 * thetaa + (1 - 0.05) * (thetaHat + (70/1000)*thetaDot_rps);
+  float phi = 0.05 * phia + (1 - 0.05) * (phiHat + (50/1000)*phiDot_rps); 
+  float theta = 0.05 * thetaa + (1 - 0.05) * (thetaHat + (50/1000)*thetaDot_rps);
 
   Serial.print(phiHat);
   Serial.print(",");
-  // Serial.print(theta);
+  Serial.print(theta);
+  Serial.print(",");
 
   phiHat = phi;
   thetaHat = theta;  
@@ -171,5 +172,5 @@ void loop() {
 
   Serial.println();
 
-  delay(70);
+  delay(50);
 }
