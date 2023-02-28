@@ -117,9 +117,10 @@ void loop() {
   float thetaa = atan2(ax, az); //x-z tilt, roll
   float phia = atan2(ay, az); //y-z tilt, pitch
 
-  Serial.print(thetaa);
-  Serial.print(",");
+  // Serial.print(thetaa);
+  // Serial.print(",");
   Serial.print(phia);
+  Serial.print(",");
 
   // Serial.print(",");
   // Serial.print(theta);
@@ -139,9 +140,12 @@ void loop() {
   float phi = 0.05 * phia + (1 - 0.05) * (phiHat + (70/1000)*phiDot_rps); 
   float theta = 0.05 * thetaa + (1 - 0.05) * (thetaHat + (70/1000)*thetaDot_rps);
 
-  // Serial.print(phi);
-  // Serial.print(",");
+  Serial.print(phiHat);
+  Serial.print(",");
   // Serial.print(theta);
+
+  phiHat = phi;
+  thetaHat = theta;  
 
   // //prints x y z mag flux density in serial monitor
   // Serial.print("Mag X: ");
