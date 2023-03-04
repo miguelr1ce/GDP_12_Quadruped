@@ -1,0 +1,78 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Cursor, Button
+from scipy.special import binom
+
+
+class Bezier:
+    """Class representing a Bezier curve."""
+
+    def __init__(self, control_points):
+        self.control_points = control_points
+        self.degree = len(control_points) - 1
+
+    def __call__(self, t):
+        """Evaluate the Bezier curve at a point t in [0, 1]."""
+        return sum(binom(self.degree, i) * (1 - t)**(self.degree - i) * t**i * p for i, p in enumerate(self.control_points))
+
+
+class BezierDrawer:
+    """Class representing a GUI for drawing a Bezier curve."""
+
+    def __init__(self):
+        self.fig, self.ax = plt.subplots()
+        self.ax.set_xlim([0, 1])
+        self.ax.set_ylim([0, 1])
+        self.ax.set_aspect('equal', adjustable='box')
+        self.ax.set_title('Click to add control points, double-click to finish')
+        self.bezier = None
+        self.cid = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        self.cp = []
+
+    def onclick(self, event):
+        if event.inaxes != self.ax:
+            return
+
+        if event.button == 1:
+            self.cp.append([event.xdata, event.ydata])
+            self.ax.plot(event.xdata, event.ydata, 'ko')
+            self.fig.canvas.draw()
+
+        elif event.button == 3 and len(self.cp) >= 2:
+            self.ax.lines.pop()
+            self.bezier = Bezier(self.cp)
+            t = np.linspace(0, 1, 100)
+            x, y = zip(*[self.bezier(ti) for ti in t])
+            self.ax.plot(x, y, 'r-', lw=2)
+            self.ax.set_title('Bezier curve')
+            self.fig.canvas.draw()
+
+            # Output the equation of the Bezier curve
+            print('Bezier curve equation:')
+            print('x(t) = ', end='')
+            for i in range(self.bezier.degree+1):
+                if i > 0:
+                    print(' + ', end='')
+                print(f'{binom(self.bezier.degree, i)} (1-t)^{self.bezier.degree-i} t^{i} {self.bezier.control_points[i][0]:.2f}', end='')
+            print()
+            print('y(t) = ', end='')
+            for i in range(self.bezier.degree+1):
+                if i > 0:
+                    print(' + ', end='')
+                print(f'{binom(self.bezier.degree, i)} (1-t)^{self.bezier.degree-i} t^{i} {self.bezier.control_points[i][1]:.2f}', end='')
+            print()
+
+        else:
+            self.cp = []
+            self.ax.lines.pop()
+            self.ax.set_title('Click to add control points, double-click to finish')
+            self.bezier = None
+            self.fig.canvas.draw()
+
+    def show(self):
+        plt.show()
+
+
+if __name__ == '__main__':
+    drawer = BezierDrawer()
+    drawer.show()

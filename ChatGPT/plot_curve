@@ -1,0 +1,74 @@
+import tkinter as tk
+import numpy as np
+
+class Point:
+    def __init__(self, x, y):
+        self.x, self.y, self.color, self.size = x, y, 'red', 6
+        
+    def draw(self, c):
+        x1, y1, x2, y2 = self.x-self.size, self.y-self.size, self.x+self.size, self.y+self.size
+        c.create_oval(x1, y1, x2, y2, fill=self.color)
+
+    def is_clicked(self, x, y):
+        return (self.x-x)**2 + (self.y-y)**2 <= self.size**2
+
+class BezierCurve:
+    def __init__(self, p, r=100):
+        self.p, self.r = p, r
+
+    def evaluate(self, t):
+        n, result = len(self.p)-1, np.zeros(2)
+        for i in range(n+1):
+            c = np.math.comb(n, i) * t**i * (1-t)**(n-i)
+            result += c * np.array([self.p[i].x, self.p[i].y])
+        return result
+
+    def draw(self, c):
+        for i in range(self.r):
+            t1, t2 = i/self.r, (i+1)/self.r
+            p1, p2 = self.evaluate(t1), self.evaluate(t2)
+            c.create_line(p1[0], p1[1], p2[0], p2[1], fill='blue', width=2)
+
+class BezierSplineGUI:
+    def __init__(self, master):
+        self.master, self.points, self.selected_point, self.curve = master, [], None, None
+        master.title("Bezier Spline GUI")
+        master.geometry("600x600")
+        master.bind("<Button-1>", self.on_click)
+        master.bind("<B1-Motion>", self.on_drag)
+        master.bind("<ButtonRelease-1>", self.on_release)
+        self.canvas = tk.Canvas(master, width=600, height=600, bg='white')
+        self.canvas.pack()
+
+    def draw_points(self):
+        self.canvas.delete("all")
+        for p in self.points:
+            p.draw(self.canvas)
+        if len(self.points) > 1:
+            self.curve = BezierCurve(self.points)
+            self.curve.draw(self.canvas)
+            print(self.curve.p)
+
+    def on_click(self, e):
+        for p in self.points:
+            if p.is_clicked(e.x, e.y):
+                self.selected_point = p
+                break
+        else:
+            p = Point(e.x, e.y)
+            self.points.append(p)
+            self.selected_point = p
+        self.draw_points()
+
+    def on_drag(self, e):
+        if self.selected_point:
+            self.selected_point.x, self.selected_point.y = e.x, e.y
+            self.draw_points()
+
+    def on_release(self, e):
+        self.selected_point = None
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    gui = BezierSplineGUI(root)
+    root.mainloop()
