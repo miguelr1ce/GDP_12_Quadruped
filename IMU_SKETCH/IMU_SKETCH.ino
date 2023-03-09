@@ -137,8 +137,10 @@ void loop() {
 
   //implementing complimentary filter
   // angle_estimate = accelerometer_estimate[rad]*alpha + (1-alpha)*(previous_angle_estimate[rad] + sample_time[s]*gyroscope_angle_rate[rad/s])
-  float phi = 0.05 * phia + (1 - 0.05) * (phiHat + (50/1000)*phiDot_rps); 
-  float theta = 0.05 * thetaa + (1 - 0.05) * (thetaHat + (50/1000)*thetaDot_rps);
+
+  float alpha = 0.25;
+  float phi = alpha * phia + (1 - alpha) * (phiHat + (50/1000)*phiDot_rps); 
+  float theta = alpha * thetaa + (1 - alpha) * (thetaHat + (50/1000)*thetaDot_rps);
 
   Serial.print(phiHat);
   Serial.print(",");
