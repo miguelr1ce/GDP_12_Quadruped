@@ -1,6 +1,12 @@
 #include <NintendoExtensionCtrl.h>
 Nunchuk nchuck;
 
+//Red – 3v3
+//White – GND
+//Green – Clock, A5(uno) or SCL(seeduino)
+//Blue – Data, A4(uno) or SDA(seeduino)
+//Black – Unsused
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
