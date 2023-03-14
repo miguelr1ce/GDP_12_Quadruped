@@ -9,7 +9,7 @@ Nunchuk nchuck;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
   nchuck.begin();
 
   while (!nchuck.connect()){
@@ -47,11 +47,11 @@ void loop() {
 
     Serial.print("\t");
 
-    Serial.print("Y value:");
+    Serial.print("Y value: ");
     Serial.println(Y);
     //append to input array codeblock here
 
     //send to bluetooth codeblock here
   }
-  delay(5);
+  delay(50);
 }
