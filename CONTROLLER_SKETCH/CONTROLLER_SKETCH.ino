@@ -23,7 +23,7 @@ void loop() {
   float X;
   float Y;
   nchuck.update();
-  float JoyX = double(nchuck.joyX());
+  int JoyX = double(nchuck.joyX());
   //mapping raw joystick X readings to between -1 and 1 -> 129 middle, 1 low, 254 high
   if (JoyX == 129){ X = 0;}
   if (JoyX > 129){ X = double(JoyX - 129) / double(125);}
