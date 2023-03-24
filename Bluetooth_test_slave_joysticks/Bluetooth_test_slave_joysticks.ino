@@ -28,11 +28,11 @@ void loop() {
   if (receive_packet.available()){
     //packet = BT_serial.read(); //read from slave bluetooth serial 
     receive_packet.rxObj(packet);
-    Serial.print("LX_joy: "); Serial.print(packet.item1); Serial.print("\t");
-    Serial.print("LY_joy: "); Serial.print(packet.item2); Serial.print("\t");
-    Serial.print("RX_joy: "); Serial.print(packet.item3); Serial.print("\t");
-    Serial.print("RY_joy: "); Serial.print(packet.item4); Serial.print("\t"); 
-    Serial.print("Button 1: "); Serial.print(packet.item5); Serial.print("\t");
+    Serial.print("LX: "); Serial.print(packet.item1); Serial.print("\t");
+    Serial.print("LY: "); Serial.print(packet.item2); Serial.print("\t");
+    Serial.print("RX: "); Serial.print(packet.item3); Serial.print("\t");
+    Serial.print("RY: "); Serial.print(packet.item4); Serial.print("\t"); 
+    Serial.print("Button 1(mode): "); Serial.print(packet.item5); Serial.print("\t");
     Serial.print("Button 2: "); Serial.print(packet.item6); Serial.print("\t");
     Serial.print("Button 3: "); Serial.print(packet.item7); Serial.println("\t");
     

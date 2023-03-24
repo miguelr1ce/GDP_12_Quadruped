@@ -177,13 +177,14 @@ void loop() {
   //putting struct in packet and transmitting packet
   transmit_packet.sendDatum(packet);
 
-  old_LX = LX;
-  old_LY = LY;
-  old_RX = RX;
-  old_RY = RY;
-  oldbutton1val = button1val;
-  oldbutton2val = button2val;
-  oldbutton3val = button3val;
+  //storing old values for comparison - do something if values change
+  // old_LX = LX;
+  // old_LY = LY;
+  // old_RX = RX;
+  // old_RY = RY;
+  // oldbutton1val = button1val;
+  // oldbutton2val = button2val;
+  // oldbutton3val = button3val;
   
   //VERY IMPORTANT the sum of delays in void loop (packet sender) needs to equal the master (packet receiver)
   //if not there will be stale packets and eventually it will stop working
