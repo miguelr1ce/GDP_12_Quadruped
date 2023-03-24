@@ -6,10 +6,10 @@ SerialTransfer receive_packet; //defining serial transfer object
 
 
 struct STRUCT { //defining struct called test_packet
-  int item1;
-  int item2;
-  int item3;
-  int item4;
+  float item1;
+  float item2;
+  float item3;
+  float item4;
   int item5;
   int item6;
   int item7;
@@ -31,7 +31,7 @@ void loop() {
     Serial.print("LX_joy: "); Serial.print(packet.item1); Serial.print("\t");
     Serial.print("LY_joy: "); Serial.print(packet.item2); Serial.print("\t");
     Serial.print("RX_joy: "); Serial.print(packet.item3); Serial.print("\t");
-    Serial.print("RY_joy: "); Serial.print(packet.item4); Serial.print("\t");
+    Serial.print("RY_joy: "); Serial.print(packet.item4); Serial.print("\t"); 
     Serial.print("Button 1: "); Serial.print(packet.item5); Serial.print("\t");
     Serial.print("Button 2: "); Serial.print(packet.item6); Serial.print("\t");
     Serial.print("Button 3: "); Serial.print(packet.item7); Serial.println("\t");
