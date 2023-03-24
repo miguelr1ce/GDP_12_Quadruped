@@ -81,8 +81,6 @@ void loop() {
   float gy = g.gyro.y;
   float gz = g.gyro.z;
 
-
-
   //Calculating accelerometer estimate for roll and pitch in radians
   //to calculate in deg, just multiply by * 57296 / 1000
   float thetaa = atan2(ax, az); //x-z tilt, roll
@@ -97,13 +95,15 @@ void loop() {
   //implementing complimentary filter
   //angle_estimate[rad] = accelerometer_estimate[rad]*alpha + (1-alpha)*(previous_angle_estimate[rad] + sample_time[s]*gyroscope_angle_rate[rad/s])
   //to calculate in deg, just multiply by * 57296 / 1000
-  float alpha = 0.25; //alpha is not an angle -> number to decide weightage of accel and gyro 
+  float alpha = 0.20; //alpha is not an angle -> number to decide weightage of accel and gyro 
   float phi = alpha * phia + (1 - alpha) * (phiHat + (time_delay/1000)*phiDot_rps); 
   float theta = alpha * thetaa + (1 - alpha) * (thetaHat + (time_delay/1000)*thetaDot_rps);
 
-  //adjusting offset (final ans)
-  float phi_output = phi* float(57296) / float(1000) + 3.35;
-  float theta_output = theta* float(57296) / float(1000) - 0.29;
+  //adjusting offset (final ans) in degrees
+  float phi_output_deg = phi* float(57296) / float(1000) + 3.35;
+  float theta_output_deg = theta* float(57296) / float(1000) - 0.29;
+  float phi_output_rad = phi_output_deg * float(1000) / float(57296);
+  float theta_output_rad = theta_output_deg * float(1000) / float(57296);
 
   //print accelerometer estimate in deg (innacurate)
   //Serial.print(thetaa * float(57296) / float(1000));
@@ -112,16 +112,29 @@ void loop() {
   //Serial.print(",");
 
   //printing fused sensor estimate in deg (accurate)
-  Serial.print(theta_output);
+  Serial.print(theta_output_deg);
   Serial.print(",");
-  Serial.print(phi_output);
-  //Serial.println(",");
-
+  //Serial.print(phi_output_deg);
+  //Serial.print(",");
+  
   //saving fused sensor estimate to previous value
-  phiHat = phi;
-  thetaHat = theta;  
+  phiHat = phi; //pitch
+  thetaHat = theta; //roll
+
+
+  //defining length of foot relative to IMU
+  float length1 = 100;
+  float length2 = 100;
+
+  //calculating offset needed for balance offset
+  // a = b sin( angle[rad] )
+  float balance_offset1 = length1 * sin(theta_output_rad);
+  float balance_offset2 = length2 * sin(phi_output_rad);
+
+  Serial.print(balance_offset1);
+  //Serial.print(balance_offset2);
 
 
   Serial.println();
-  delay(50);
+  delay(time_delay);
 }
