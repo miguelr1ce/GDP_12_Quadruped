@@ -62,21 +62,21 @@ void loop() {
     int forwardCommand = map(Yvalue,129,255,10,19);
     if (forwardCommand >12 && forwardCommand <= 19){
       Serial.write(forwardCommand);//-------------------------------------------Command Send
-      //Serial.println(forwardCommand);
+      Serial.println(forwardCommand);
       
     }
         //Back
     int backCommand = map(Yvalue,0,126,59,50);
     if (backCommand >52 && backCommand <= 59){
       Serial.write(backCommand);//-------------------------------------------Command Send
-      //Serial.println(backCommand);
+      Serial.println(backCommand);
       
     }
         //Right
     int rightCommand = map(Xvalue,126,254,30,39);
     if (rightCommand >32 && rightCommand <= 39){
       Serial.write(rightCommand);//-------------------------------------------Command Send
-      //Serial.println(rightCommand);
+      Serial.println(rightCommand);
       
     }
 
@@ -84,7 +84,7 @@ void loop() {
     int leftCommand = map(Xvalue,0,125,79,70);
     if (leftCommand >72 && leftCommand <= 79){
       Serial.write(leftCommand);//-------------------------------------------Command Send
-      //Serial.println(leftCommand);
+      Serial.println(leftCommand);
       
     }
     delay(100);
