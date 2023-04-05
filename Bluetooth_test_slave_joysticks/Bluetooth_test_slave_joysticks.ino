@@ -13,6 +13,9 @@ struct STRUCT { //defining struct called test_packet
   int item5;
   int item6;
   int item7;
+  int item8;
+  int item9;
+  int item10;
 } packet;
 
 void setup() {
@@ -34,11 +37,16 @@ void loop() {
     Serial.print("RY: "); Serial.print(packet.item4); Serial.print("\t"); 
     Serial.print("Button 1(mode): "); Serial.print(packet.item5); Serial.print("\t");
     Serial.print("Button 2: "); Serial.print(packet.item6); Serial.print("\t");
-    Serial.print("Button 3: "); Serial.print(packet.item7); Serial.println("\t");
+    Serial.print("Button 3: "); Serial.print(packet.item7); Serial.print("\t");
+    Serial.print("Button 4: "); Serial.print(packet.item8); Serial.print("\t");
+    Serial.print("Button 5: "); Serial.print(packet.item9); Serial.print("\t");
+    Serial.print("Button 6: "); Serial.print(packet.item10); Serial.println("\t");
     
-    //VERY IMPORTANT the sum of delays in void loop (packet receiver) needs to equal the master (packet sender)
-    //if not there will be stale packets and eventually it will stop working
-    delay(50);
+    //VERY IMPORTANT the delay at the end of void loop of slave needs to be slightly longer than the master
+    //so that there are always packets available in the buffer to be read but not too much that there is too much latency
+    //200ms is a safe value 
+
+    delay(200);
   
   }
 }
