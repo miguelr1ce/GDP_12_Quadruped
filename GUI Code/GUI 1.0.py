@@ -243,6 +243,13 @@ class InputSetsWindow(tk.Tk):
         self.canvas_table.place(x = 450, y = 450)
         self.create_table_labels(self.num_sets)
         
+        self.canvas_legend = tk.Canvas(self, width = 60, height = 45) 
+        self.canvas_legend.place(x = 970, y = 450)
+        self.canvas_legend.create_rectangle(2, 2, 58, 20, fill = "deepskyblue")
+        self.canvas_legend.create_rectangle(2, 25, 58, 43, fill = "lightgrey")
+        self.canvas_legend.create_text(30, 11, text = "SWING", fill = "white", font = ('TkDefaultFont', 9, 'bold'))
+        self.canvas_legend.create_text(30, 34, text = "STANCE", font = ('TkDefaultFont', 9, 'bold'))
+        
         tk.Button(self, text="Plot", command=self.plot_coordinates).place(x = 270, y = 300)
         tk.Button(self, text="Generate", command=self.generate).place(x = 320, y = 300)
 
@@ -390,6 +397,7 @@ class InputSetsWindow(tk.Tk):
     def create_table_labels(self, num_rectangles):
         for i in range(num_rectangles):
             tk.Label(self, text = i + 1, font = ("Helvetica", 10)).place(x = 445 + (i * 500 / num_rectangles) + (500 / num_rectangles / 2), y = 427)
+           
         
     def create_rectangle(self, x, y, width, height, color):
         self.canvas_table.create_rectangle(x, y, x + width, y + height, fill=color)
