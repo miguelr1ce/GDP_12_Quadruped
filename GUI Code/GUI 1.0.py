@@ -247,8 +247,6 @@ class InputSetsWindow(tk.Tk):
         tk.Button(self, text="Generate", command=self.generate).place(x = 320, y = 300)
 
         self.default_values()
-        a = self.Swing_Stance()
-        print(a)
     
     def create_entry(self, num_sets, influenced_axis, component, order):
         displacement = (order - 1) * (num_sets * 20 + 50)
@@ -378,6 +376,16 @@ class InputSetsWindow(tk.Tk):
         canvas.draw()
         canvas.get_tk_widget().place(x = 450, y = offset - component_label)
         canvas.get_tk_widget().config(width=500, height=400)
+        
+        self.reset_table()
+        
+    def reset_table(self):
+        self.canvas_table.delete("all")
+        code, swing = self.Swing_Stance()
+        
+        
+        for j in range(self.num_legs):
+            self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
     
     def create_table_labels(self, num_rectangles):
         for i in range(num_rectangles):
@@ -403,15 +411,18 @@ class InputSetsWindow(tk.Tk):
         
         list_ = M.copy()
         list_.append(M[0])
+        code = []
         swing = 0
         
         for i in range(len(M)):
             if list_[i] != 0 or list_[i + 1] != 0:
+                code.append(1)
                 swing += 1
-                
-        stance = len(M) - swing    
-        print(M)
-        return [swing, stance]
+            else:
+                code.append(0)
+        
+
+        return code, swing
     
     def generate(self):
         M_list = []
@@ -477,12 +488,9 @@ class InputSetsWindow(tk.Tk):
             else:
                 code.append(0)
         
-        self.create_big_rectangle(self.num_sets, code, 0)
-        self.create_big_rectangle(self.num_sets, rearrange(swing, code), 1)
+        for j in range(self.num_legs):
+            self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
         
-        if self.num_legs > 2:
-            self.create_big_rectangle(self.num_sets, rearrange(swing * 2, code), 2)
-            self.create_big_rectangle(self.num_sets, rearrange(swing * 3, code), 3)
 
 
 window1 = InputWindow()
