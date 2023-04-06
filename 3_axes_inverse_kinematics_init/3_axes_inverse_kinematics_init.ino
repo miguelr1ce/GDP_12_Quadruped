@@ -6,12 +6,16 @@
 template<class T> inline Print& operator <<(Print &obj,     T arg) { obj.print(arg);    return obj; }
 template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(arg, 4); return obj; }
 
+HardwareSerial& odrive_serial = Serial1;
+HardwareSerial& odrive_serial2 = Serial2;
+
 // ODrive object
-ODriveArduino odrive1(Serial1);
-ODriveArduino odrive2(Serial2);
+ODriveArduino odrive1(odrive_serial);
+ODriveArduino odrive2(odrive_serial2);
 
 float leglen = 140.0;
 float feetlen = 10;
+float M0,M1,M2;
 int xx;
 int yy;
 int zz;
@@ -29,12 +33,26 @@ gait_struct gait;
 
 //Function Prototypes
 void kinematics_3d(double x, double y, double z, double *p);
-void drive(int leg,double* p);
+void drive(int leg,double* p,float a,float b,float c);
 
 void setup() {
   Serial.begin(115200);
+  Serial1.begin(115200);
+  Serial2.begin(115200);
   //Arrays: [iterations][legs][x,y,z coordinates]
-  Serial.println(gait.LR[0][1][0]);
+  //Serial.println(gait.LR[0][1][0]);
+  //Serial.println(abs(atan(200/0.00)));
+  M0 = odrive1.GetPosition(0);
+  M1 = odrive1.GetPosition(1);
+  M2 = odrive2.GetPosition(0);
+  Serial.print(M0); Serial.print('\t');Serial.print(M1); Serial.print('\t');Serial.print(M2); Serial.print('\n');
+  Serial2 << "r vbus_voltage\n";
+  Serial << "Vbus voltage: " << odrive2.readFloat() << '\n';
+  Serial1 << "r vbus_voltage\n";
+  Serial << "Vbus voltage: " << odrive1.readFloat() << '\n';
+  odrive1.run_state(0, 8, false);
+  odrive1.run_state(1, 8, false);
+  odrive2.run_state(0, 8, false);
   //while (!Serial) ; // wait for Arduino Serial Monitor to open
   
   //$$$$$$$$$$$$$$$$$[Leg 1 : FR, Leg 2: BL, Leg 3: BR, Leg 4:FL]$$$$$$$$$$$$$$$$$$$$$$$$$$//
@@ -55,9 +73,9 @@ void loop() {
     Serial.println(phi[0]);
     Serial.println(phi[1]);
     Serial.println(phi[2]);
-    //drive(1,phi);
+    drive(1,phi,M0,M1,M2);
   }
-  
+  delay(5);
 }
 
 void kinematics_3d(double x, double y, double z, double *p){
@@ -96,6 +114,7 @@ void kinematics_3d(double x, double y, double z, double *p){
 //   Serial.println(beta);
    alpha = acos((feetlen*feetlen-c1*c1-c2*c2)/(-2*c1*c2));
 //   Serial.println(alpha);
+//  Serial.print(z);Serial.println(y);
    gamma = abs(atan(z/abs(y)));
 //   Serial.println(gamma);
    if(y<=0){
@@ -111,27 +130,37 @@ void kinematics_3d(double x, double y, double z, double *p){
    // p[0] for left motor (M1) , p[1] for right motor (M0)
    // p[0] and p[1] are zero when legs are vertical, pointing to the ground
    // M(0) for right shoulder, M(1) for left shoulder
+   //zero is when the the leg height is 200
 }
 
-void drive(int leg,double* p){
-  if (leg==1 || leg == 3){
-     odrive1.TrapezoidalMove(0,-p[1]);
-     odrive1.TrapezoidalMove(1,p[0]);
-     odrive2.TrapezoidalMove(0,p[2]);
+void drive(int leg,double* p,float a,float b,float c){  
+  //a = M0, b = M1, c = M2
+  if (leg==1 || leg == 3){ //FR,BR
+     odrive1.TrapezoidalMove(0,p[1]+a);
+     odrive1.TrapezoidalMove(1,-p[0]+b);
+     odrive2.TrapezoidalMove(0,p[2]+c);
   }
-  else if (leg==2 || leg == 4){
-     odrive1.TrapezoidalMove(0,-p[0]);
-     odrive1.TrapezoidalMove(1,p[1]);
-     odrive2.TrapezoidalMove(1,p[2]);
+  else if (leg==2 || leg == 4){ // FL,BL
+     odrive1.TrapezoidalMove(0,p[0]+a);
+     odrive1.TrapezoidalMove(1,-p[1]+b);
+     odrive2.TrapezoidalMove(1,p[2]+c);
   }
 }
+//50,50,40
+//-50,-50,-40
 
 
 /* Things To do before implementation:
     - Check direction of shoulder rotation
-    - Check direction of M[0] and M[1]
-    - Check limit of M[0] and M[1]
-    - Check limit of x,y,z coordinates
+    - Check direction of M[0] and M[1] - Axis 0 : positive = Anticlockwise
+    - Check limit of M[0] and M[1]   - M[0] = Anticlockwise 0.3, Clockwise -1.12
+                                     - M[1] = Anticlockwise 1.12, Clockwise  -0.3
+                                     - Shoulder Front: positive = outward = 3; negative = inward = -3 
+    - Check limit of x,y,z coordinates :  Perspective from FR side view
+                                      X: -80 to 100 (on stand) ; 
+                                      Y: -130 to 140  (negative to the left, positive to the right)
+                                      Z: -80 to 90 (negative stretch down, positive lift up)
+                                      (60,60,35) and (60,60,35) is a limit (cannot be more than 35)
  */
 
 
