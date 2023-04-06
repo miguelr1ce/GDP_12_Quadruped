@@ -114,26 +114,7 @@ def replace_brackets(input_list):
 # Step X: Define Gait Coordinates, For F / B, L / R and Rotation
 
 # Example: Local coordinates of the rectangle movement of triangle
-## Maybe can create a GUI, ask for the total amount of iterations first.
-## Then generate that amount of points input windows
-## The WHOLE trajectory needs to be able to remain WITHIN the working region
 
-# Component Marching degines the height of the step
-# Marching_input = [[0], [Lift], [0], [0], [0], [0], [0], [0]]
-
-# for i in range(len(Marching_input)):
-#     for j in range(len(Marching_input[i])):
-#         Marching_input[i][j] = 200 - Marching_input[i][j]
-
-# Marching = transform([[[0], [Lift], [0], [0], [0], [0], [0], [0]], ['z']])
-
-# Translation
-## Basically = [-60, 0, 60, 40, 20, 0, -20, -40]
-# F_B = transform([[[-Step], [0], [Step], [40], [20], [0], [-20], [-40]], ['y']]) # x-axis
-# L_R = transform([[[-Step], [0], [Step], [40], [20], [0], [-20], [-40]], ['x']]) # z-axis
-
-# Rotation
-## I think we need to define the radius and the angle of rotation
 Angle = 20
 r = math.sqrt(Offset_x ** 2 + Offset_y ** 2)
 theta_origin = math.atan(Offset_y / Offset_x)
@@ -184,13 +165,6 @@ def create_rotation(No_iterations, theta_o, angle, swing, stance, r1, r2):
 d = create_rotation(8, theta_origin, 20, 2, 6, r, r)
 
 # Rotation coordinates for each leg in complete iteration
-# r_leg1 = create_rotation(No_Iteration, theta_origin, Angle, 2, 6, r, r) # Front Right Leg
-# r_leg2 = create_rotation(No_Iteration, theta_origin, Angle, 2, 6, -r, -r) # Back Left Leg
-# r_leg3 = create_rotation(No_Iteration, theta_origin, Angle, 2, 6, -r, r) # Front Left Leg
-# r_leg4 = create_rotation(No_Iteration, theta_origin, Angle, 2, 6, r, -r) # Back Right Leg
-
-
-# Rot = [transform([r_leg1, ['x', 'y']]), transform([r_leg2, ['x', 'y']]), transform([r_leg3, ['x', 'y']]), transform([r_leg4, ['x', 'y']])]
 
 # =============================================================================
 
@@ -201,18 +175,6 @@ d = create_rotation(8, theta_origin, 20, 2, 6, r, r)
 # Step X: Output Text File
 # =============================================================================
 
-
-# print(d)
-# print(r_leg1)
-# Test run
-# testing = [[[0], [50.0], [0], [0]], ['y']]
-# testing1 = [[[0, 2], [50.0, 5], [0, 1], [0, 5]], ['y', 'z']]
-# multiply(L_R, B)
-# a = combine(No_Iteration, No_Legs, [Marching, F_B, L_R, Rot], 1)
-# a = transform(Marching[0], Marching[1])
-# b = xyz(transform(testing1))
-# for c in a:
-#     print(replace_brackets(c), "\n")
     
 # =============================================================================
 # Step X: GUI
@@ -248,23 +210,25 @@ class InputWindow(tk.Tk):
             tk.messagebox.showwarning("Warning", "The number of iterations should be a multiple of the number of legs.")
         else:    
             num_sets = int(self.num_sets_entry.get())
+            num_legs = int(self.legs_var.get())
             self.destroy()
-            self.window2 = InputSetsWindow(num_sets)
+            self.window2 = InputSetsWindow(num_sets, num_legs)
 
         
 class InputSetsWindow(tk.Tk):
-    def __init__(self, num_sets):
+    def __init__(self, num_sets, num_legs):
         super().__init__()
         self.title("Input Sets Window")
         self.geometry("1200x750+-10+0")
         self.entries = []
         self.num_sets = num_sets
+        self.num_legs = num_legs
         
         self.create_entry(num_sets, ['z'], "Marching", 1) # Marching
         self.create_entry(num_sets, ['y'], "Forward / Backward", 2) # Forward / Backward
         self.create_entry(num_sets, ['x'], "Left / Right", 3) # Left / Right
         self.create_rotation(num_sets, "Degree of Rotation")
-        self.default_values()
+
         
         self.var_list = [tk.BooleanVar(value=True) for i in range(3)]
         self.checkbutton1 = tk.Checkbutton(self, text="Forward / Backward", variable=self.var_list[0])
@@ -275,13 +239,16 @@ class InputSetsWindow(tk.Tk):
         self.checkbutton2.place(x = 270, y = 150)
         self.checkbutton3.place(x = 270, y = 200)
         
-        self.canvas_table = tk.Canvas(self, width=520, height=50)
+        self.canvas_table = tk.Canvas(self, width=520, height=250)
         self.canvas_table.place(x = 450, y = 450)
-        self.create_big_rectangle(self.num_sets, [1, 1, 0, 0, 0, 0, 0, 0])
+        self.create_table_labels(self.num_sets)
         
         tk.Button(self, text="Plot", command=self.plot_coordinates).place(x = 270, y = 300)
         tk.Button(self, text="Generate", command=self.generate).place(x = 320, y = 300)
 
+        self.default_values()
+        a = self.Swing_Stance()
+        print(a)
     
     def create_entry(self, num_sets, influenced_axis, component, order):
         displacement = (order - 1) * (num_sets * 20 + 50)
@@ -411,20 +378,40 @@ class InputSetsWindow(tk.Tk):
         canvas.draw()
         canvas.get_tk_widget().place(x = 450, y = offset - component_label)
         canvas.get_tk_widget().config(width=500, height=400)
+    
+    def create_table_labels(self, num_rectangles):
+        for i in range(num_rectangles):
+            tk.Label(self, text = i + 1, font = ("Helvetica", 10)).place(x = 445 + (i * 500 / num_rectangles) + (500 / num_rectangles / 2), y = 427)
         
     def create_rectangle(self, x, y, width, height, color):
         self.canvas_table.create_rectangle(x, y, x + width, y + height, fill=color)
 
-    def create_big_rectangle(self, num_rectangles, color_code):
-        self.canvas_table.delete("all")
+    def create_big_rectangle(self, num_rectangles, color_code, y):
         rectangle_width = 500 / num_rectangles
         rectangle_height = 30
+        offset = 40
         for i in range(num_rectangles):
-            tk.Label(self, text = i + 1, font = ("Helvetica", 10)).place(x = 445 + (i * 500 / num_rectangles) + (500 / num_rectangles / 2), y = 420)
             if color_code[i] == 0:
-                self.create_rectangle(i * rectangle_width + 2, 2, rectangle_width, rectangle_height - 2, "lightgrey")
+                self.create_rectangle(i * rectangle_width + 2, 2 + y * offset, rectangle_width, rectangle_height - 2, "lightgrey")
             else:
-                self.create_rectangle(i * rectangle_width + 2, 2, rectangle_width, rectangle_height - 2, "deepskyblue")
+                self.create_rectangle(i * rectangle_width + 2, 2 + y * offset, rectangle_width, rectangle_height - 2, "deepskyblue")
+    
+    def Swing_Stance(self):
+        M = []
+        for i in range(self.num_sets):
+            M.append(float(self.entries[i][2].get()))
+        
+        list_ = M.copy()
+        list_.append(M[0])
+        swing = 0
+        
+        for i in range(len(M)):
+            if list_[i] != 0 or list_[i + 1] != 0:
+                swing += 1
+                
+        stance = len(M) - swing    
+        print(M)
+        return [swing, stance]
     
     def generate(self):
         M_list = []
@@ -479,8 +466,24 @@ class InputSetsWindow(tk.Tk):
                 elif i < 24:
                     self.entries[i][0].delete(0, tk.END)
                     self.entries[i][0].insert(0, LR[i-16])
-    
         
+        swing = int(self.num_sets / self.num_legs)
+        stance = self.num_sets - swing
+        code = []
+        
+        for i in range(self.num_sets):
+            if i < swing:
+                code.append(1)
+            else:
+                code.append(0)
+        
+        self.create_big_rectangle(self.num_sets, code, 0)
+        self.create_big_rectangle(self.num_sets, rearrange(swing, code), 1)
+        
+        if self.num_legs > 2:
+            self.create_big_rectangle(self.num_sets, rearrange(swing * 2, code), 2)
+            self.create_big_rectangle(self.num_sets, rearrange(swing * 3, code), 3)
+
 
 window1 = InputWindow()
 window1.mainloop()    
