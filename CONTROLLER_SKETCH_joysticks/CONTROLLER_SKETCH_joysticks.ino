@@ -17,6 +17,9 @@ struct STRUCT {
   int item5;
   int item6;
   int item7;
+  int item8;
+  int item9;
+  int item10;
 } packet;
 
 //pin names for the L and R joystick and buttons
@@ -29,16 +32,26 @@ const int RY_pin = A3;
 const int button_1 = 2;
 const int button_2 = 3;
 const int button_3 = 4;
+const int button_4 = 5;
+const int button_5 = 6;
+const int button_6 = 7;
 
 //variable to check 0v or 5v (pin pushed or not)
 int button1state = 0;
 int button2state = 0;
 int button3state = 0;
+int button4state = 0;
+int button5state = 0;
+int button6state = 0;
 
 //variable to store 1 if button is pushed
 int button1val = 0;
 int button2val = 0;
 int button3val = 0;
+int button4val = 0;
+int button5val = 0;
+int button6val = 0;
+
 
 //defining previous values
 float old_LX = 0;
@@ -48,6 +61,10 @@ float old_RY = 0;
 int oldbutton1val = 0;
 int oldbutton2val = 0;
 int oldbutton3val = 0;
+int oldbutton4val = 0;
+int oldbutton5val = 0;
+int oldbutton6val = 0;
+
 
 //initialising mode;
 int mode = 1; 
@@ -70,6 +87,9 @@ void setup() {
   lcd.print("LX "); lcd.print("LY "); lcd.print("RX "); lcd.print("RY "); lcd.print("Mode");
   lcd.setCursor(0, 1); //row 1 col 1
   lcd.print("We");
+
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
   }
 
 
@@ -107,10 +127,12 @@ void loop() {
   // if ((0.75 > LX) && (LX > 0.50)) {LX_zone = 2;}
   // if ((0.98 > LX) && (LX > 0.75)) {LX_zone = 3;}
 
-  button1state = digitalRead(2);
-  button2state = digitalRead(3);
-  button3state = digitalRead(4);
-
+  button1state = digitalRead(button_1);
+  button2state = digitalRead(button_2);
+  button3state = digitalRead(button_3);
+  button4state = digitalRead(button_4);
+  button5state = digitalRead(button_5);
+  button6state = digitalRead(button_6);
 
   //Reading all button states to see if pressed (buttonstate == 5v), if pressed return 1, else return 0
   if (button1state == HIGH) {button1val = 1;}
@@ -121,7 +143,15 @@ void loop() {
 
   if (button3state == HIGH) {button3val = 1;}
   else {button3val = 0;}
+
+  if (button4state == HIGH) {button4val = 1;}
+  else {button4val = 0;}
   
+  if (button5state == HIGH) {button5val = 1;}
+  else {button5val = 0;}
+
+  if (button6state == HIGH) {button6val = 1;}
+  else {button6val = 0;}
 
   //button 1 iterating through 0-5 if the button is pressed
   if ((button1val == 1) && (oldbutton1val == 0)){
@@ -139,7 +169,11 @@ void loop() {
 
   Serial.print("Button 1: "); Serial.print(mode); Serial.print("\t");
   Serial.print("Button 2: "); Serial.print(button2val); Serial.print("\t");
-  Serial.print("Button 3: "); Serial.print(button3val); Serial.println("\t");
+  Serial.print("Button 3: "); Serial.print(button3val); Serial.print("\t");
+  Serial.print("Button 4: "); Serial.print(button4val); Serial.print("\t");
+  Serial.print("Button 5: "); Serial.print(button5val); Serial.print("\t");
+  Serial.print("Button 6: "); Serial.print(button6val); Serial.println("\t");
+  
 
 
 
@@ -173,6 +207,10 @@ void loop() {
   packet.item5 = mode;
   packet.item6 = button2val;
   packet.item7 = button3val;
+  packet.item8 = button4val;
+  packet.item9 = button5val;
+  packet.item10 = button6val;
+
 
   //putting struct in packet and transmitting packet
   transmit_packet.sendDatum(packet);
@@ -182,11 +220,14 @@ void loop() {
   // old_LY = LY;
   // old_RX = RX;
   // old_RY = RY;
-  // oldbutton1val = button1val;
-  // oldbutton2val = button2val;
-  // oldbutton3val = button3val;
+   oldbutton1val = button1val;
+   oldbutton2val = button2val;
+   oldbutton3val = button3val;
+   oldbutton4val = button4val;
+   oldbutton5val = button5val;
+   oldbutton6val = button6val;
   
-  //VERY IMPORTANT the sum of delays in void loop (packet sender) needs to equal the master (packet receiver)
-  //if not there will be stale packets and eventually it will stop working
-  delay(50);
+  //VERY IMPORTANT the delay at the end of master void loop needs to increase if more things are added in the packet struct
+  //A safe value i used here is 150ms
+  delay(150);
 }
