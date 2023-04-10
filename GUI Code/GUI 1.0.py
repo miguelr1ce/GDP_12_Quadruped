@@ -218,42 +218,44 @@ class InputWindow(tk.Tk):
 class InputSetsWindow(tk.Tk):
     def __init__(self, num_sets, num_legs):
         super().__init__()
+        # Info of the window
         self.title("Input Sets Window")
         self.geometry("1200x750+-10+0")
         self.entries = []
         self.num_sets = num_sets
         self.num_legs = num_legs
         
+        # Create entries for gait components
         self.create_entry(num_sets, ['z'], "Marching", 1) # Marching
         self.create_entry(num_sets, ['y'], "Forward / Backward", 2) # Forward / Backward
         self.create_entry(num_sets, ['x'], "Left / Right", 3) # Left / Right
         self.create_rotation(num_sets, "Degree of Rotation")
 
-        
+        # Create checkbox for 3D plots
         self.var_list = [tk.BooleanVar(value=True) for i in range(3)]
         self.checkbutton1 = tk.Checkbutton(self, text="Forward / Backward", variable=self.var_list[0])
         self.checkbutton2 = tk.Checkbutton(self, text="Left / Right", variable=self.var_list[1])
         self.checkbutton3 = tk.Checkbutton(self, text="Rotation", variable=self.var_list[2])
-
         self.checkbutton1.place(x = 270, y = 100)
         self.checkbutton2.place(x = 270, y = 150)
         self.checkbutton3.place(x = 270, y = 200)
         
+        # Create phase diagram
         self.canvas_table = tk.Canvas(self, width=520, height=250)
         self.canvas_table.place(x = 450, y = 450)
-        self.create_table_labels(self.num_sets)
-        
+        self.create_table_labels(self.num_sets, self.num_legs)
         self.canvas_legend = tk.Canvas(self, width = 60, height = 45) 
         self.canvas_legend.place(x = 970, y = 450)
         self.canvas_legend.create_rectangle(2, 2, 58, 20, fill = "deepskyblue")
         self.canvas_legend.create_rectangle(2, 25, 58, 43, fill = "lightgrey")
         self.canvas_legend.create_text(30, 11, text = "SWING", fill = "white", font = ('TkDefaultFont', 9, 'bold'))
         self.canvas_legend.create_text(30, 34, text = "STANCE", font = ('TkDefaultFont', 9, 'bold'))
+
         
         tk.Button(self, text="Plot", command=self.plot_coordinates).place(x = 270, y = 300)
         tk.Button(self, text="Generate", command=self.generate).place(x = 320, y = 300)
 
-        self.default_values()
+        self.default_values(self.num_legs)
     
     def create_entry(self, num_sets, influenced_axis, component, order):
         displacement = (order - 1) * (num_sets * 20 + 50)
@@ -262,7 +264,8 @@ class InputSetsWindow(tk.Tk):
             tk.Label(self, text="Set {}:".format(i+1)).place(x = 50, y = i * 20 + offset + displacement)
             x_entry = tk.Entry(self, width = 5)  
             if 'x' in influenced_axis:
-                x_entry.insert(0, random.randint(-20, 20))
+                # x_entry.insert(0, random.randint(-20, 20))
+                x_entry.insert(0, 0)
             else:
                 x_entry.insert(0, 0)
                 x_entry.config(state='disabled')
@@ -270,7 +273,8 @@ class InputSetsWindow(tk.Tk):
             
             y_entry = tk.Entry(self, width = 5)
             if 'y' in influenced_axis:
-                y_entry.insert(0, random.randint(-20, 20))
+                # y_entry.insert(0, random.randint(-20, 20))
+                y_entry.insert(0, 0)
             else:
                 y_entry.insert(0, 0)
                 y_entry.config(state='disabled')
@@ -278,7 +282,8 @@ class InputSetsWindow(tk.Tk):
             
             z_entry = tk.Entry(self, width = 5)
             if 'z' in influenced_axis:
-                z_entry.insert(0, random.randint(0, 30))
+                # z_entry.insert(0, random.randint(0, 30))
+                z_entry.insert(0, 0)
             else:
                 z_entry.insert(0, 0)
                 z_entry.config(state='disabled')
@@ -365,7 +370,7 @@ class InputSetsWindow(tk.Tk):
         if self.var_list[2].get() == True:
             ax.plot(x_data3, y_data3, z_data3, color = "green")
             ax.scatter(x_data3, y_data3, z_data3, marker='o', s=100, color = "green")
-        
+            
         
         x = x_data
         y = y_data
@@ -384,20 +389,26 @@ class InputSetsWindow(tk.Tk):
         canvas.get_tk_widget().place(x = 450, y = offset - component_label)
         canvas.get_tk_widget().config(width=500, height=400)
         
-        self.reset_table()
+        self.reset_table(self.num_legs)
         
-    def reset_table(self):
+    def reset_table(self, num_legs):
         self.canvas_table.delete("all")
         code, swing = self.Swing_Stance()
-        
-        
         for j in range(self.num_legs):
             self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
+        arrow_length = 500
+        number_segment = 4
+        segment_size = arrow_length / number_segment
+        self.canvas_table.create_line(0, (50 + 30 * num_legs), arrow_length, (50 + 30 * num_legs), width = 4, arrow=tk.LAST)
+        for k in range(number_segment - 1):
+            self.canvas_table.create_line(segment_size * (k + 1), (50 + 30 * num_legs - 10), segment_size * (k + 1), (50 + 30 * num_legs + 10), width = 4)
     
-    def create_table_labels(self, num_rectangles):
+    def create_table_labels(self, num_rectangles, num_legs):
         for i in range(num_rectangles):
-            tk.Label(self, text = i + 1, font = ("Helvetica", 10)).place(x = 445 + (i * 500 / num_rectangles) + (500 / num_rectangles / 2), y = 427)
-           
+            tk.Label(self, text = "Iter" + str(i + 1), font = ("Helvetica", 10)).place(x = 454 + (i * 500 / num_rectangles) + (500 / num_rectangles / 2), y = 437, anchor = 'center')
+        for j in range(num_legs):
+            tk.Label(self, text = "Leg " + str(j + 1), font = ("Helvetica", 10)).place(x = 410, y = j * (40) + 454)    
+            
         
     def create_rectangle(self, x, y, width, height, color):
         self.canvas_table.create_rectangle(x, y, x + width, y + height, fill=color)
@@ -411,7 +422,7 @@ class InputSetsWindow(tk.Tk):
                 self.create_rectangle(i * rectangle_width + 2, 2 + y * offset, rectangle_width, rectangle_height - 2, "lightgrey")
             else:
                 self.create_rectangle(i * rectangle_width + 2, 2 + y * offset, rectangle_width, rectangle_height - 2, "deepskyblue")
-    
+                
     def Swing_Stance(self):
         M = []
         for i in range(self.num_sets):
@@ -470,7 +481,7 @@ class InputSetsWindow(tk.Tk):
         for c in Compiled:
             print(replace_brackets(c), "\n")
         
-    def default_values(self):
+    def default_values(self, num_legs):
         if self.num_sets == 8:
             M = [0, 50, 0, 0, 0, 0, 0, 0]
             FB = [-60, 0, 60, 40, 20, 0, -20, -40]
@@ -499,6 +510,17 @@ class InputSetsWindow(tk.Tk):
         for j in range(self.num_legs):
             self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
         
+        arrow_length = 500
+        number_segment = 4
+        segment_size = arrow_length / number_segment
+        self.canvas_table.create_line(0, (50 + 30 * num_legs), arrow_length, (50 + 30 * num_legs), width = 4, arrow=tk.LAST)
+        for k in range(number_segment - 1):
+            self.canvas_table.create_line(segment_size * (k + 1), (50 + 30 * num_legs - 10), segment_size * (k + 1), (50 + 30 * num_legs + 10), width = 4)
+            percentage = int((k + 1) * (100 / number_segment))
+            tk.Label(self, text = str(percentage) + "%", font = ("Helvetica", 12, "bold")).place(x = 450 + segment_size * (k + 1), y = 500 + 20 + 30 * num_legs, anchor = 'center')
+        
+        tk.Label(self, text = "0%", font = ("Helvetica", 12, "bold")).place(x = 450, y = 500 + 20 + 30 * num_legs, anchor = 'center')
+        tk.Label(self, text = "100%", font = ("Helvetica", 12, "bold")).place(x = 450 + arrow_length, y = 500 + 20 + 30 * num_legs, anchor = 'center')
 
 
 window1 = InputWindow()
