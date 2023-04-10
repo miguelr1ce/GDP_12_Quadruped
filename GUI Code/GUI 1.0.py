@@ -221,6 +221,8 @@ class InputSetsWindow(tk.Tk):
         # Info of the window
         self.title("Input Sets Window")
         self.geometry("1200x750+-10+0")
+        
+        # Variables
         self.entries = []
         self.num_sets = num_sets
         self.num_legs = num_legs
@@ -256,6 +258,7 @@ class InputSetsWindow(tk.Tk):
         tk.Button(self, text="Generate", command=self.generate).place(x = 320, y = 300)
 
         self.default_values(self.num_legs)
+        self.plot_coordinates()
     
     def create_entry(self, num_sets, influenced_axis, component, order):
         displacement = (order - 1) * (num_sets * 20 + 50)
@@ -296,8 +299,9 @@ class InputSetsWindow(tk.Tk):
         tk.Label(self, text = component, font = 15).place(x = 50, y = offset - component_label + displacement)
         tk.Label(self, text=component).place(x = 50, y = offset + displacement)
         rot_entry = tk.Entry(self, width = 8)
-        rot_entry.insert(0, 20)
+        rot_entry.insert(0, 0)
         rot_entry.place(x = row1 + 65, y = offset + displacement)
+        print(len(self.entries))
         self.entries.append(rot_entry)
         
         
@@ -349,9 +353,8 @@ class InputSetsWindow(tk.Tk):
         ax.set_ylabel('F/B')
         ax.set_zlabel('Height')
               
-        
+        code, swing_state = self.Swing_Stance()
         degrees = float(self.entries[-1].get())
-        swing_state = 2
         rotation_data = xyz(transform([create_rotation(self.num_sets, theta_origin, degrees, swing_state, self.num_sets - swing_state, r, r), ['x', 'y']]))
         
         x_data3 = []
@@ -440,7 +443,6 @@ class InputSetsWindow(tk.Tk):
             else:
                 code.append(0)
         
-
         return code, swing
     
     def generate(self):
@@ -496,7 +498,12 @@ class InputSetsWindow(tk.Tk):
                 elif i < 24:
                     self.entries[i][0].delete(0, tk.END)
                     self.entries[i][0].insert(0, LR[i-16])
-        
+            
+            # Rotation entry
+            self.entries[24].delete(0, tk.END)
+            self.entries[24].insert(0, 20)
+                    
+                    
         swing = int(self.num_sets / self.num_legs)
         stance = self.num_sets - swing
         code = []
@@ -509,6 +516,8 @@ class InputSetsWindow(tk.Tk):
         
         for j in range(self.num_legs):
             self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
+        
+
         
         arrow_length = 500
         number_segment = 4
