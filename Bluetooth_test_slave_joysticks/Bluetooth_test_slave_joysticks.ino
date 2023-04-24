@@ -23,7 +23,7 @@ void setup() {
   Serial.begin(9600); //baud rate for hardware serial (serial monitor)
   BT_serial.begin(9600); //baud rate for software serial (bluetooth serial)
   receive_packet.begin(BT_serial); //setting serial transfer object to bluetooth
-
+  Serial.print(100);
 }
 
 void loop() {
