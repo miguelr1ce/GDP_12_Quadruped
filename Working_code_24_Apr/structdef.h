@@ -4,7 +4,7 @@
 #define legn 4 //number of legs
 #define coor 3 //x,y,z
 #define itr 8 //number of iterations
-#define timer 1000
+#define timer 50
 
 //Structure Definition
 struct gait_struct{

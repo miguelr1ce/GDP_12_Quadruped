@@ -71,6 +71,7 @@ double invmat[legn][coor];
 
 //Gait Initialisation  -  Copy gait matrix from GUI
 gait_struct crawl;
+gait2_struct trot;
 
 //Function Prototypes
 void state(int x);
