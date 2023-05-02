@@ -122,17 +122,46 @@ void loop() {
   thetaHat = theta; //roll
 
 
-  //defining length of foot relative to IMU
-  float length1 = 100;
-  float length2 = 100;
+  //defining limits for IMU measurement
+  if (theta_output_deg > 30){
+    theta_output_deg = 30
+  }
+  if (theta_output_deg < -30){
+    theta_output_deg = -30
+  }
+
+  if (phi_output_deg > 30){
+    phi_output_deg = 30
+  }
+  if (theta_output_deg < -30){
+    theta_output_deg = -30
+  }
 
   //calculating offset needed for balance offset
   // a = b sin( angle[rad] )
-  float balance_offset1 = length1 * sin(theta_output_rad);
-  float balance_offset2 = length2 * sin(phi_output_rad);
+  //a and b are in mm unit
+  //balance offset due to rolling, rolling means left and right are opposite directions
+  float offset_roll_FR = 115 * sin(theta_output_rad);
+  float offset_roll_FL = -115 * sin(theta_output_rad);
+  float offset_roll_RR = 115 * sin(theta_output_rad);
+  float offset_roll_RL = -115 * sin(theta_output_rad);
 
-  Serial.print(balance_offset1);
-  //Serial.print(balance_offset2);
+  //balance offset due to pitching, pitching means front and rear are opposite directions
+  float offset_pitch_FR = 115 * sin(theta_output_rad);
+  float offset_pitch_FL = 115 * sin(theta_output_rad);
+  float offset_pitch_RR = -115 * sin(theta_output_rad);
+  float offset_pitch_RL = -115 * sin(theta_output_rad);
+
+  //combining offsets due to pitch and roll detected by IMU
+  float total_offset_FR = offset_roll_FR + offset_pitch_FR; //front right
+  float total_offset_FL = offset_roll_FL + offset_pitch_FL; //front left
+  float total_offset_RR = offset_roll_RR + offset_pitch_RR; //rear right
+  float total_offset_RL = offset_roll_RL + offset_pitch_RL; //rear left
+
+  Serial.print(total_offset_FR);
+  Serial.print(total_offset_FL);
+  Serial.print(total_offset_RR);
+  Serial.print(total_offset_RL);
 
 
   Serial.println();
