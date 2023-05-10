@@ -1,5 +1,6 @@
 # GDP_12_Quadruped
 4th year group project for University of Southampton (2022/2023)
+
 Title: Creating a Modular Quadrupedal Robot
 
 Group Members:
