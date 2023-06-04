@@ -14,10 +14,9 @@ Created on Mon Mar  6 12:32:36 2023
 # Libraries
 import math
 import tkinter as tk
-from mpl_toolkits import mplot3d
+# from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import random
 
 # Inputs from Joy Sticks
 A = 1 # Forward / Backward Multiplier
@@ -79,23 +78,42 @@ def rearrange(index, component_list):
 
 # Function that compile everything into the large list
 def combine(No_Iteration, No_Legs, components, mode): # Mode defines point of contact
+    
     end_list = [[[] for _ in range(No_Iteration)] for _ in range(len(components))]
     for i in range(len(components) - 1):
         iterations = xyz(components[i])
         for k in range(No_Iteration):
             for j in range(No_Legs):
-                rearranged = rearrange(int(j * (No_Iteration / No_Legs)), iterations)
-                end_list[i][k].append(rearranged[k])
+                if mode == 1: # Crawl
+                    Relative_offsets = No_Legs
+                    rearranged = rearrange(int(j * (No_Iteration / Relative_offsets)), iterations)
+                    end_list[i][k].append(rearranged[k])
+                if mode == 2: # Trot
+                    Relative_offsets = No_Legs / 2
+                    if j < 2:
+                        end_list[i][k].append(iterations[k])
+                    else:
+                        rearranged = rearrange(int((No_Iteration / Relative_offsets)), iterations)
+                        end_list[i][k].append(rearranged[k])
     
     r1_iter = xyz(components[3][0]) # Leg 1
     r2_iter = xyz(components[3][1]) # Leg 2
     r3_iter = xyz(components[3][2]) # Leg 3
     r4_iter = xyz(components[3][3]) # Leg 4
-    for i in range(No_Iteration):
-        end_list[3][i].append(r1_iter[i])
-        end_list[3][i].append(rearrange(int(No_Iteration / 4), r2_iter)[i])
-        end_list[3][i].append(rearrange(int(No_Iteration / 4 * 2), r3_iter)[i])
-        end_list[3][i].append(rearrange(int(No_Iteration / 4 * 3), r4_iter)[i])
+    if mode == 1: # Crawl
+        for i in range(No_Iteration):
+            Relative_offsets = No_Legs
+            end_list[3][i].append(r1_iter[i])
+            end_list[3][i].append(rearrange(int(No_Iteration / Relative_offsets), r2_iter)[i])
+            end_list[3][i].append(rearrange(int(No_Iteration / Relative_offsets * 2), r3_iter)[i])
+            end_list[3][i].append(rearrange(int(No_Iteration / Relative_offsets * 3), r4_iter)[i])
+    if mode == 2: # Trot
+        for i in range(No_Iteration):
+            Relative_offsets = No_Legs / 2
+            end_list[3][i].append(r1_iter[i])
+            end_list[3][i].append(r2_iter[i])
+            end_list[3][i].append(rearrange(int(No_Iteration / Relative_offsets), r3_iter)[i])
+            end_list[3][i].append(rearrange(int(No_Iteration / Relative_offsets), r4_iter)[i])
     return end_list
 
 # Function that introduce multiplier for testing purposes
@@ -162,7 +180,6 @@ def create_rotation(No_iterations, theta_o, angle, swing, stance, r1, r2):
     else:
         print("Error: sum of swing and stance is not equal to number of iterations")
         
-d = create_rotation(8, theta_origin, 20, 2, 6, r, r)
 
 # Rotation coordinates for each leg in complete iteration
 
@@ -227,6 +244,12 @@ class InputSetsWindow(tk.Tk):
         self.num_sets = num_sets
         self.num_legs = num_legs
         
+        # Create Gait Mode Drop Down
+        self.gait_mode = tk.StringVar(self)
+        self.gait_mode.set("Crawl")
+        self.gait_dropdown = tk.OptionMenu(self, self.gait_mode, "Crawl", "Trot")
+        self.gait_dropdown.place(x = 270, y = 25)
+        
         # Create entries for gait components
         self.create_entry(num_sets, ['z'], "Marching", 1) # Marching
         self.create_entry(num_sets, ['y'], "Forward / Backward", 2) # Forward / Backward
@@ -259,6 +282,7 @@ class InputSetsWindow(tk.Tk):
 
         self.default_values(self.num_legs)
         self.plot_coordinates()
+
     
     def create_entry(self, num_sets, influenced_axis, component, order):
         displacement = (order - 1) * (num_sets * 20 + 50)
@@ -353,9 +377,18 @@ class InputSetsWindow(tk.Tk):
         ax.set_ylabel('F/B')
         ax.set_zlabel('Height')
               
-        code, swing_state = self.Swing_Stance()
+        code, self.swing_state = self.Swing_Stance()
         degrees = float(self.entries[-1].get())
-        rotation_data = xyz(transform([create_rotation(self.num_sets, theta_origin, degrees, swing_state, self.num_sets - swing_state, r, r), ['x', 'y']]))
+        rotation_data = xyz(transform([create_rotation(self.num_sets, theta_origin, degrees, self.swing_state, self.num_sets - self.swing_state, r, r), ['x', 'y']]))
+        
+        index_r = 1
+        re_code = code.copy()
+        print(re_code)
+        while re_code[0] != 1 and re_code[-1] != 0:
+            re_code = rearrange(index_r, code)
+            index_r += 1
+            print(re_code)
+            print("yes")
         
         x_data3 = []
         y_data3 = []
@@ -397,8 +430,15 @@ class InputSetsWindow(tk.Tk):
     def reset_table(self, num_legs):
         self.canvas_table.delete("all")
         code, swing = self.Swing_Stance()
-        for j in range(self.num_legs):
-            self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
+        if self.gait_mode.get() == "Crawl":
+            for j in range(self.num_legs):
+                self.create_big_rectangle(self.num_sets, rearrange(int(self.num_sets / self.num_legs) * j, code), j)
+        elif self.gait_mode.get() == "Trot":
+            for j in range(self.num_legs):
+                if j < 2:
+                    self.create_big_rectangle(self.num_sets, code, j)
+                else:
+                    self.create_big_rectangle(self.num_sets, rearrange(int(self.num_sets / 2), code), j)
         arrow_length = 500
         number_segment = 4
         segment_size = arrow_length / number_segment
@@ -420,6 +460,7 @@ class InputSetsWindow(tk.Tk):
         rectangle_width = 500 / num_rectangles
         rectangle_height = 30
         offset = 40
+        
         for i in range(num_rectangles):
             if color_code[i] == 0:
                 self.create_rectangle(i * rectangle_width + 2, 2 + y * offset, rectangle_width, rectangle_height - 2, "lightgrey")
@@ -472,22 +513,55 @@ class InputSetsWindow(tk.Tk):
         F_B = transform([FB_list, ['y']])
         L_R = transform([LR_list, ['x']])
         angle = self.entries[-1].get()
-        swing = 2
+        swing = self.swing_state
         stance = self.num_sets - swing
         r_leg1 = create_rotation(self.num_sets, theta_origin, float(angle), swing, stance, r, r) # Front Right Leg
         r_leg2 = create_rotation(self.num_sets, theta_origin, float(angle), swing, stance, -r, -r) # Back Left Leg
         r_leg3 = create_rotation(self.num_sets, theta_origin, float(angle), swing, stance, -r, r) # Front Left Leg
         r_leg4 = create_rotation(self.num_sets, theta_origin, float(angle), swing, stance, r, -r) # Back Right Leg
         Rot = [transform([r_leg1, ['x', 'y']]), transform([r_leg2, ['x', 'y']]), transform([r_leg3, ['x', 'y']]), transform([r_leg4, ['x', 'y']])]
-        Compiled = combine(self.num_sets, 4, [Marching, F_B, L_R, Rot], 1)
+        
+        Gait = 0
+        if self.gait_mode.get() == "Crawl":
+            Gait = 1
+        if self.gait_mode.get() == "Trot":
+            Gait = 2       
+        Compiled = combine(self.num_sets, 4, [Marching, F_B, L_R, Rot], Gait)
+        
         for c in Compiled:
             print(replace_brackets(c), "\n")
+            
+        def confirm():
+            file_name = entry.get() + ".txt"
+            with open(file_name, "w") as f:
+                f.write(f"struct {entry.get()}{{\n")
+                f.write("    double March[itr][legn][coor]=" + str(replace_brackets(Compiled [0])) + ";\n")
+                f.write("    double FB[itr][legn][coor]=" + str(replace_brackets(Compiled [1])) + ";\n")
+                f.write("    double LR[itr][legn][coor]=" + str(replace_brackets(Compiled [2])) + ";\n")
+                f.write("    double RT[itr][legn][coor]=" + str(replace_brackets(Compiled [3])) + ";\n")
+                f.write("};\n")
+            top.destroy()
+    
+        top = tk.Toplevel()
+        top.title("Enter file name")
+        label = tk.Label(top, text="Enter file name:")
+        label.pack(side="left")
+        entry = tk.Entry(top)
+        entry.pack(side="left")
+        button = tk.Button(top, text="Confirm", command=confirm)
+        button.pack(side="left")
+        
         
     def default_values(self, num_legs):
         if self.num_sets == 8:
-            M = [0, 50, 0, 0, 0, 0, 0, 0]
-            FB = [-60, 0, 60, 40, 20, 0, -20, -40]
-            LR = [-30, 0, 30, 20, 10, 0, -10, -20]
+            # M = [0, 50, 0, 0, 0, 0, 0, 0]
+            # FB = [-60, 0, 60, 40, 20, 0, -20, -40]
+            # LR = [-30, 0, 30, 20, 10, 0, -10, -20]
+            
+            M = [0, 50, 50, 50, 0, 0, 0, 0]
+            FB = [-60, -30, 0, 30, 60, 30, 0, -30]
+            LR = [-30, -15, 0, 15, 30, 15, 0, -15]
+    
             for i in range(len(self.entries)):
                 if i < 8:
                     self.entries[i][2].delete(0, tk.END)
@@ -517,7 +591,6 @@ class InputSetsWindow(tk.Tk):
         for j in range(self.num_legs):
             self.create_big_rectangle(self.num_sets, rearrange(swing * j, code), j)
         
-
         
         arrow_length = 500
         number_segment = 4
