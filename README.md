@@ -6,11 +6,12 @@ Title: Creating a Modular Quadrupedal Robot
 Group Members:
 1) Ryan Khoo Yeap Hong                     -> Lead Vibe Checker
 2) Nirvair Kaur Jasbir Singh               -> Editor & Chief
-3) Khor Chhong Shen                        -> ODrive Whisperer
+3) Khor Chong Shen                         -> ODrive Whisperer
 4) Miguel Antonio Alfonso Villarivera      -> The Cogfather
 5) Jia Hao Gau                             -> Mr. Safety
 6) Ka Wai Ken Chung                        -> Gait Keeper
  
+ FULL FUSION360 CAD FILE: https://drive.google.com/file/d/1EFiVYnqyQNYSkIoPCi1z3-Mt8qbjOBQe/view?usp=sharing 
  
  Some features of our quadrupedal robot
  1. 3DoF for each leg
