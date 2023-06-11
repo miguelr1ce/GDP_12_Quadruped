@@ -12,6 +12,7 @@ Group Members:
 6) Ka Wai Ken Chung                        -> Gait Keeper
  
  FULL FUSION360 CAD FILE: https://drive.google.com/file/d/1EFiVYnqyQNYSkIoPCi1z3-Mt8qbjOBQe/view?usp=sharing
+ 
  (open fusion and import file, will populate with all designs and dependencies)
  
  Some features of our quadrupedal robot
